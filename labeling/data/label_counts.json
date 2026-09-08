@@ -1,0 +1,34 @@
+{
+ "training": {
+  "8B": {
+   "attempts": 1944,
+   "hard_rows": 1873,
+   "cfhl_rows": 1850,
+   "citation_dropped": 71,
+   "crutch_dropped": 23,
+   "attr_err": 0,
+   "cfhl_positives": 364
+  },
+  "32B": {
+   "attempts": 1944,
+   "hard_rows": 1893,
+   "cfhl_rows": 1891,
+   "citation_dropped": 51,
+   "crutch_dropped": 2,
+   "attr_err": 0,
+   "cfhl_positives": 417
+  }
+ },
+ "validation_13_arms": {
+  "8B": {
+   "citation_dropped": 106,
+   "attr_err": 0,
+   "crutch_applied": false
+  },
+  "32B": {
+   "citation_dropped": 100,
+   "attr_err": 1,
+   "crutch_applied": false
+  }
+ }
+}
