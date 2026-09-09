@@ -10,20 +10,32 @@ already contains the answer. Under a full `import Mathlib` the rebuilt declarati
 and Lean rejects it as *already declared* before the proof is even read, recording a correct proof as a
 failure. That force-failed **1,018 of the 1,367** training theorems.
 
+A second problem is independent of the collision. We use Goedel-Prover-V2's released prompt and elaborate
+each proof under the context that prompt shows the model, so we never supply file-local context the model has
+not seen. A mathlib statement is written against its own file, its section `variable` binders and their
+instance arguments, its `open` scopes and local notation, and the corpus gives us the theorem's span without
+them, so a statement that needs that context cannot elaborate. Dropping those is what leaves about 20% of the
+theorems, **243** training and **90** validation.
+
 ## The seven mechanisms, in the order they apply
 
 | # | mechanism | level | applies in |
 |---|---|---|---|
 | 1 | **dead-statement filter**: drop theorems whose statement already fails to compile (1,367/419 -> 1,080/319) | theorem | both |
-| 2 | **statement-elaboration filter**: keep only theorems whose rebuilt `header + statement := by sorry` elaborates (-> **243 / 90**) | theorem | both |
-| 3 | **rename**: give the rebuilt head a unique `__us` suffix so the declaration is legal | verify-time | both |
+| 2 | **rename**: give the rebuilt head a unique `__us` suffix so the declaration is legal. Applied here first, and still in force at checking time | theorem + verify-time | both |
+| 3 | **statement-elaboration filter**: keep only theorems whose rebuilt `header + statement := by sorry` elaborates **with the rename already applied** (-> **243 / 90**) | theorem | both |
 | 4 | **`attribute [-simp] <target>`**: remove the target's own simp entry, on every collider | verify-time | both |
 | 5 | **`attribute [-aesop] <target>`**: in addition, where the target is a registered aesop rule (2 of the 325 colliders) | verify-time | both |
 | 6 | **crutch purge**: drop an attempt that *fails* with the guard but *passes* without it | attempt | **training only, by design** |
 | 7 | **citation filter**: drop any surviving success whose proof text names the target | attempt | both |
 | + | **attribute-error guard**: exclude an attempt whose prepended attribute line itself errored | attempt | both |
 
-Mechanisms 3-5 are emitted only at **checking time**; the prompt the model saw never contains them.
+The rename precedes the elaboration filter because it is what makes the filter possible: without it a
+collider is rejected as *already declared* before Lean ever reaches the statement, so a broken statement and
+a merely colliding one are indistinguishable. The keep decision is exactly "the statement elaborates once
+renamed".
+
+Mechanisms 2, 4 and 5 are emitted only at **checking time**; the prompt the model saw never contains them.
 Mechanism 5 is conditional because the command errors unless the target already is an aesop rule, so it is
 gated on the per-theorem classification in `data/theorem_classification.json`.
 
@@ -56,10 +68,10 @@ Training runs over 1,944 attempts per model, leaving **1,850** (8B) and **1,891*
 
 ## Layout
 
-- `code/lenient_headers.py`, `build_verify_header`, the single builder both splits call (mechanisms 3-5).
+- `code/lenient_headers.py`, `build_verify_header`, the single builder both splits call (mechanisms 2, 4 and 5).
 - `code/relabel_lenient.py`, `partition_verdicts` (mechanisms 6-7 and the guard), `_err_on_attribute`.
 - `code/classify_theorems.py`, assigns each theorem `NONCOLLIDER` / `COLLIDER_NONAESOP` / `COLLIDER_AESOP`.
-- `code/citation_filter.py`, `code/filtered_dataset.py`, mechanism 7, and mechanisms 1-2.
+- `code/citation_filter.py`, `code/filtered_dataset.py`, mechanism 7, and mechanisms 1 and 3.
 - `data/`, the classification and the keep- and drop-lists the filters produce.
 - `tests/`, a runnable demonstration that each mechanism does what this file says.
 - `../guides/labeling_example.md`, one theorem end to end.

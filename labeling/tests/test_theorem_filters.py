@@ -1,4 +1,4 @@
-"""Mechanisms 1-2: the two theorem-level filters, and the safety property they are claimed to have."""
+"""Mechanisms 1 and 3: the two theorem-level filters, and the safety property they are claimed to have."""
 import json, unittest
 from _load import DATA
 
@@ -46,6 +46,22 @@ class TestTheoremFilters(unittest.TestCase):
     def test_the_two_aesop_colliders_are_the_named_ones(self):
         self.assertEqual(sorted(load("theorem_classification.json")["aesop_rules"]),
                          ["Complex.continuous_sinh", "ENNReal.measurable_toReal"])
+
+    def test_readme_orders_the_rename_before_the_elaboration_filter(self):
+        """The order is load-bearing, not cosmetic.
+
+        The elaboration filter's keep rule is "the statement elaborates once renamed": without the rename a
+        collider is rejected as already declared before Lean reaches the statement, so the filter cannot run.
+        An earlier revision of the README listed the rename after the filter.
+        """
+        readme = (DATA.parent / "README.md").read_text(encoding="utf-8")
+        rows = [ln for ln in readme.splitlines() if ln.startswith("| ") and "**" in ln]
+        rename = next(n for n, ln in enumerate(rows) if "**rename**" in ln)
+        elab = next(n for n, ln in enumerate(rows) if "**statement-elaboration filter**" in ln)
+        self.assertLess(rename, elab,
+                        "the README must list the rename before the statement-elaboration filter")
+        self.assertIn("with the rename already applied", readme,
+                      "the elaboration row must say the test runs under the rename")
 
 
 if __name__ == "__main__":

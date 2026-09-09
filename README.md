@@ -82,11 +82,13 @@ that checks a candidate proof already contains the answer. Under a full `import 
 declaration collides with the original and Lean rejects it before reading the proof, which force-failed
 **1,018 of the 1,367** training theorems.
 
-Seven mechanisms answer that, in order. Two filter theorems: a **dead-statement filter** (1,367/419 ->
-1,080/319) and a **statement-elaboration filter**, keeping only theorems whose rebuilt
-`header + statement := by sorry` compiles (-> **243 / 90**). Three blind the checker at verification time
-only, never in the prompt: a **`__us` rename**, **`attribute [-simp]`** on every collider, and
-**`attribute [-aesop]`** in addition on the two colliders that are registered aesop rules. Two act per
+Seven mechanisms answer that, in order. A **dead-statement filter** drops theorems whose statement already
+fails to compile (1,367/419 -> 1,080/319). A **`__us` rename** then makes the rebuilt declaration legal, and a
+**statement-elaboration filter** keeps only theorems whose rebuilt `header + statement := by sorry` compiles
+*with that rename applied* (-> **243 / 90**); without the rename a collider is rejected as *already declared*
+before Lean reaches the statement. The rename and two further header lines blind the checker at verification
+time only, never in the prompt: **`attribute [-simp]`** on every collider, and **`attribute [-aesop]`** in
+addition on the two colliders that are registered aesop rules. Two act per
 attempt: a **crutch purge** (drop an attempt that fails with the guard but passes without it) and a
 **citation filter** (drop any success whose proof names the target). An **attribute-error guard** excludes an
 attempt whose prepended attribute line itself errored.

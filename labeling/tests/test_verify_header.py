@@ -1,4 +1,4 @@
-"""Mechanisms 3-5: the rename, the simp erase, and the conditional aesop erase."""
+"""Mechanisms 2, 4 and 5: the rename, the simp erase, and the conditional aesop erase."""
 import unittest
 import _load
 
