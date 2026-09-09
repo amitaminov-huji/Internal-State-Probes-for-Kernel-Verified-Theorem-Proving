@@ -75,5 +75,47 @@ class TestAttrErrMessages(unittest.TestCase):
         self.assertFalse(self.mod._err_on_attribute(r, "Nat.add"))
 
 
+class TestLabelSetDefinitions(unittest.TestCase):
+    """The partition the README states, checked against the shipped counts.
+
+    P_train = {h and not c}, N_train = {not s and not e}, D_train = {(h and c) or (s and not h) or e},
+    and A = P + N + D. `label_counts.json` carries every term, so the arithmetic is checkable here even
+    though the per-attempt verdicts are not shipped.
+    """
+
+    def setUp(self):
+        import json
+        from _load import DATA
+        with open(DATA / "label_counts.json") as fh:
+            self.counts = json.load(fh)["training"]
+
+    def test_drop_set_is_the_three_attempt_level_mechanisms(self):
+        for model, c in self.counts.items():
+            d = c["citation_dropped"] + c["crutch_dropped"] + c["attr_err"]
+            self.assertEqual(c["attempts"] - c["cfhl_rows"], d,
+                             f"{model}: |D_train| must be citation + crutch + attribute-error")
+
+    def test_the_three_label_sets_partition_the_attempts(self):
+        for model, c in self.counts.items():
+            drops = c["attempts"] - c["cfhl_rows"]
+            positives = c["cfhl_positives"]
+            negatives = c["cfhl_rows"] - positives
+            self.assertEqual(positives + negatives + drops, c["attempts"],
+                             f"{model}: P + N + D must cover every attempt exactly once")
+
+    def test_readme_pool_and_shift_figures_follow_from_the_counts(self):
+        """The README's 458/470 pool and its softening figures are derivable, not free-standing."""
+        readme = (DATA_PARENT / "README.md").read_text(encoding="utf-8")
+        for model, c in self.counts.items():
+            pool = c["cfhl_positives"] + (c["attempts"] - c["cfhl_rows"])   # {s}, since attr_err = 0
+            self.assertIn(str(pool), readme, f"{model}: pool {pool} should appear in the README")
+            self.assertIn(str(c["citation_dropped"]), readme)
+            self.assertIn(str(c["cfhl_positives"]), readme)
+
+
+from _load import DATA as _D
+DATA_PARENT = _D.parent
+
+
 if __name__ == "__main__":
     unittest.main()

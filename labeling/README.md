@@ -42,6 +42,60 @@ gated on the per-theorem classification in `data/theorem_classification.json`.
 **A positive therefore means three things at once**: it compiled under the guard, it did not cite the target,
 and it did not lean on the target's own automation entry.
 
+## What counts as a label
+
+The rules above can be stated exactly. For an attempt `a` (one theorem paired with one sampling seed),
+verification yields four predicates:
+
+| | meaning |
+|---|---|
+| `h(a)` | compiles under the checking header (`__us` rename + `[-simp]` on colliders + conditional `[-aesop]`) and passes robust verification |
+| `s(a)` | compiles under the rename alone, i.e. with the target still fully available, both by name and through its own automation entries |
+| `c(a)` | the proof text names the target lemma |
+| `e(a)` | the prepended attribute line itself errored |
+
+Writing `A` for the attempts of a split:
+
+```
+P_train = P_val = { a in A : h and not c }
+N_train         = { a in A : not s and not e }
+D_train         = { a in A : (h and c)  or  (s and not h)  or  e }
+                               citation      automation       attribute
+                               filter        erase            guard
+A = P_train + N_train + D_train
+```
+
+A positive is an attempt the kernel accepts with the target's own automation entries removed and without
+naming it. A **negative label** is one the kernel rejects **even when the target is fully available**, by name
+or through its automation. The three terms of `D_train` are exactly the three attempt-level mechanisms, so the
+partition is also the reason each of them exists.
+
+Two implications hold, measured over all 3,888 training attempts with 0 violations each. **`h => s`**: the
+checking header only removes lemmas, so anything compiling under it compiles without it, which is why the
+negative rule reads `not s` rather than `not h and not s`. It is worth measuring rather than assuming, because
+dropping a `simp` lemma can in principle stop `simp` diverging. **`e => not h`**: the guard is consulted only
+on a failure, so `not e` excludes only an attribute error whose proof also fails unguarded. No training
+attempt is of that kind, but the term is not redundant.
+
+**Validation applies the same positive rule and discards nothing** (there is no `D_val`; a citing pass or an
+attribute error is simply not a solve), **and its negatives are never used**: the contest ranks arms by
+theorems solved, then by passing attempts, both of which count positives only.
+
+### What the mechanisms cost
+
+Of the attempts the kernel accepts with the target fully available (458 on 8B, 470 on 32B), the automation
+erase removes 23 and 2 (5.0%, 0.4%) and the citation filter 71 and 51 (15.5%, 10.9%), leaving the 364 and 417
+positives the probes train on. Among the negative labels, 3.8% (8B) and 4.2% (32B) name the target, against
+16.3% and 10.9% of accepted proofs; how many reach it through automation is very difficult to measure, because
+a failed attempt has no completed proof to attribute steps to. Per-mechanism counts are in the table above.
+
+Both definitions are the strictest available in this setup: on the positive side the smallest set, since every
+alternative is a superset; on the negative side the highest evidential bar, since an attempt counts as a
+failure only if it fails with the target fully available. Softening either changes little: relaxing the
+positive rule adds at most 94 attempts on 8B (+25.8%) and 53 on 32B (+12.7%), and relaxing the negative rule,
+by no longer counting a failure that names the target, removes 56 (-3.8%) and 62 (-4.2%). Those are kept
+deliberately: an attempt given the target that still failed is the best-evidenced negative there is.
+
 ## Why mechanism 6 is training-only
 
 The crutch purge only removes attempts that already **failed** under the guard. Training keeps labelled rows,
