@@ -21,7 +21,8 @@ both heads' numbers side by side. It was never deployed.
 
 At **line starts**, the indentation that opens each proof line, not at newlines. In the Lean block a newline is followed by the *next line's
 indentation*, so a probe reading there sees the state just before whitespace; the indentation token is the one
-that immediately precedes real Lean content (81-99% of the time, against under 8% for a bare newline). The
+that immediately precedes real Lean content: inside the Lean block the next token is real content in 89-97% of
+firings, measured over every base attempt of both models on the training and the test theorems. The
 line-start set is the 229 vocabulary items that decode to a whitespace run of two or more spaces, listed in
 [`boundary_token_ids.json`](boundary_token_ids.json) (the filename keeps the earlier internal name). It is identical for both base models, whose tokenizers are
 byte-identical.

@@ -119,6 +119,6 @@ A theorem counts as solved when at least one of its 32 steered attempts verifies
 
 Steering with this setting does **not** improve the prover. On MathOlympiadBench it solves 35 theorems of 360
 against the base's 41 on 8B, and 59 against 60 on 32B, and it costs about a sixth of all verifying attempts on
-both base models. The per-attempt effect is real and visible in the generations, which are 14-21% shorter with
-31-43% fewer repetition events; it simply does not convert into proofs. The results in
+both base models. The per-attempt effect is real and visible in the generations, which are 14-21% shorter; it simply does not
+convert into proofs. The results in
 [`../results/`](../results/) are the full record of both arms.

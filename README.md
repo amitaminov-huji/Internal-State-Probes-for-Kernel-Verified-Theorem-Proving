@@ -45,8 +45,8 @@ Two heads were trained, an MLP and an LSTM. **The deployed controller is the LST
 | Base    | **41** | **60** |
 | Steered | 35 | 59 |
 
-Denominator: 360 theorems. **Steering does not help**: it solves 6 fewer theorems than the base on 8B and 1 fewer
-on 32B. Neither difference is statistically significant at k=32, the budget the comparison was designed around
+Denominator: 360 theorems. **Out of domain, steering does not help**: it solves 6 fewer theorems than the base on
+8B and 1 fewer on 32B. Neither difference is statistically significant at k=32, the budget the comparison was designed around
 (paired exact McNemar, p = 0.109 and p = 1.00), so we report a negative result rather than a measured degradation.
 
 The steadier effect is one level down: verifying attempts fall from 560 to 461 on 8B and from 897 to 744 on 32B,
