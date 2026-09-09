@@ -51,14 +51,15 @@ on both sides of the split. The honest numbers are also stored, and are the ones
 
 | checkpoint | theorem-grouped K-fold | MathOlympiadBench (out of domain) |
 |---|---|---|
-| 8B LSTM  | 0.907 | 0.826 |
-| 32B LSTM | 0.915 | 0.855 |
-| 8B MLP   | 0.892 | 0.831 |
-| 32B MLP  | 0.907 | 0.808 |
+| 8B LSTM  | 0.91 | 0.83 |
+| 32B LSTM | 0.92 | 0.86 |
+| 8B MLP   | 0.89 | 0.83 |
+| 32B MLP  | 0.91 | 0.81 |
 
 These are point estimates on a single run; we report no confidence intervals, and no ROC-AUC difference here
-should be called significant. The values above are the ones stored in each checkpoint; the paper and the thesis
-round them to two decimals, because the fold-to-fold standard deviation is +/- 0.02 to 0.04.
+should be called significant. We quote two decimals throughout, as the paper and the thesis do, because the
+fold-to-fold standard deviation is +/- 0.02 to 0.04; each checkpoint's `metadata` stores the unrounded value.
+Across the four heads that is 0.89-0.92 in domain and 0.81-0.86 out of domain, the ranges the paper reports.
 
 See [`../guides/steered_generation_example.md`](../guides/steered_generation_example.md) for how `p_fail` is
 turned into a steering signal.

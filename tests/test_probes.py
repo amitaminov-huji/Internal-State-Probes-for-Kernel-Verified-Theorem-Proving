@@ -49,6 +49,37 @@ class TestProbes(unittest.TestCase):
             _, sd = load(name)
             self.assertEqual([k for k in sd if "step" in k.lower()], [], f"{name}")
 
+    def test_readme_quotes_auroc_to_two_decimals_matching_the_checkpoints(self):
+        """The reporting precision is two decimals, and each cell must be its checkpoint's own value.
+
+        The repo drifted to three decimals while the paper, thesis and deck all reported two; the
+        coherence harness bans three-decimal ROC-AUC but never reads this repo.
+        """
+        readme = (ROOT / "probes" / "README.md").read_text(encoding="utf-8")
+        # the AUROC table alone: three columns, unlike the checkpoint table above it
+        table = [ln for ln in readme.splitlines()
+                 if ln.startswith("| ") and ("LSTM" in ln or "MLP" in ln) and len(ln.split("|")) == 5]
+        self.assertEqual(len(table), 4, "expected one AUROC row per checkpoint")
+        for ln in table:
+            for cell in [c.strip() for c in ln.split("|")[2:4]]:
+                self.assertRegex(cell, r"^0\.\d{2}$", f"ROC-AUC must be two decimals, got {cell!r}")
+        want = {}
+        for name in PARAMS:
+            _, sd = load(name)
+            ck = torch.load(str(ROOT / "probes" / f"{name}.pt"), map_location="cpu", weights_only=False)
+            m = ck.get("metadata", {}) or {}
+            key = ("8B" if "_8B_" in name else "32B") + (" LSTM" if name.endswith("_lstm") else " MLP")
+            want[key] = (round(m["kfold_grouped_auroc"] + 1e-9, 2),
+                         round(m["mobench_boundary_auroc"] + 1e-9, 2))
+        for ln in table:
+            cells = [c.strip() for c in ln.split("|")[1:4]]
+            got = (float(cells[1]), float(cells[2]))
+            self.assertEqual(got, want[cells[0]], f"{cells[0]}: README {got} vs checkpoint {want[cells[0]]}")
+        # and the spread the paper quotes
+        ind = [v[0] for v in want.values()]; ood = [v[1] for v in want.values()]
+        self.assertEqual((min(ind), max(ind)), (0.89, 0.92))
+        self.assertEqual((min(ood), max(ood)), (0.81, 0.86))
+
     def test_readme_names_the_lstm_as_the_deployed_head(self):
         txt = " ".join((ROOT / "README.md").read_text().split())
         self.assertIn("The deployed controller is the LSTM", txt)
