@@ -144,12 +144,19 @@ theorem end to end.
   norm simp X)`, the aesop analogue of `simp [X]`, whose argument sits in parentheses rather than brackets and
   which occurs zero times in our generations; and Lean's explicit-argument prefix `@`, which defeats the `:=`
   and `using` patterns, so `have h := @X ...` is not flagged. Three real citations of that shape occur, all in
-  *failing* attempts, where the filter is never consulted, so no label changed. Neither gap is fixed: the
-  labels are frozen. We swept **all 13,248 training and validation attempts** for the target's
-  name appearing anywhere the filter does not look: 33 attempts mention the full name and every one is the
-  model echoing the theorem statement in a comment, all in *failing* attempts; 71 accepted attempts mention
-  only a short name, and all of those are something else entirely (`id` the identity function, the `ext`
-  tactic, a `.map` field, and `Real.toReal_zero` where the target was `EReal.toReal_zero`). **No accepted
-  proof cites the target through an uncaught form.**
+  *failing* attempts. That matters less than it sounds, and the formal
+  definitions say why: the filter is consulted only on successes (the positive rule is `h ∧ ¬c`), and the
+  negative rule is `¬s ∧ ¬e` with no `c` term, so a negative is by definition an attempt that failed *with the
+  target fully available*, by name and through its automation. Citing is permitted there by construction, and
+  permitting it is what makes the negative rule strict. Those three are the model applying the very lemma it
+  was asked to prove and the kernel still rejecting the proof. The gap would matter for an *accepted* attempt
+  of that shape, and none occurs. Neither gap is fixed: the labels are frozen.
+  We swept **all 13,248 training and validation attempts** for the target's name appearing anywhere the filter
+  does not look: 33 attempts mention the full name, all in *failing* attempts, and 29 of those 33 are the model
+  echoing the theorem statement in a comment rather than citing it; 71 accepted attempts mention only a short
+  name, and none of those refers to the target (`id` the identity function, the `ext` tactic, a `.map` field,
+  and one `simpa [toReal] using Real.toReal_zero` where the target was `EReal.toReal_zero` — that identifier
+  does not exist, the `using` term is inert because `simp [toReal]` closes the goal alone, and the statement is
+  true by definition). **No accepted proof cites the target through an uncaught form.**
 - **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
   everywhere on MathOlympiadBench, including on attempts that go on to verify.

@@ -130,9 +130,21 @@ positives. The short name is needed, and requiring a citation position is what m
 The opposite risk, a real citation in a position the list does not cover, was checked by sweeping **all
 13,248** training and validation attempts (243 theorems x 8 attempts x 2 base models = 3,888 training;
 90 x 4 x 13 contest arms x 2 = 9,360 validation) for a target name the filter did not flag. 350 attempts mention it
-uncaught; 33 of those use the full name and every one is the model echoing the theorem statement in a `--`
-comment, all in *failing* attempts, where a citation changes no label; the 71 accepted ones are the
-short-name false alarms above. **No accepted proof cites the target through a form the filter missed.**
+uncaught; 33 of those use the full name, all in *failing* attempts, and **29 of the 33** are the model echoing
+the theorem statement in a `--` comment rather than citing it. The other 4 put the name in code: one restates
+the theorem as a nested declaration, and three are genuine citations of the form `have h := @X ...`, which the
+filter misses because Lean's explicit-argument prefix `@` defeats the `:=` and `using` patterns (the
+`exact`/`apply`/`refine` and bracket patterns allow arbitrary text and survive it). The 71 accepted ones are
+the short-name false alarms above. **No accepted proof cites the target through a form the filter missed.**
+
+Those three missed citations are not leakage that escaped, and the formal definitions are what settle it. The
+filter is consulted **only on successes**: the positive rule is `h ∧ ¬c`, and the partition gates the citation
+drop on `hard_ok`, so a citing failure keeps its negative label. The negative rule is `¬s ∧ ¬e`, with **no `c`
+term at all** — a negative is by definition an attempt that failed *with the target fully available*, by name
+and through its automation, and allowing that is exactly what makes the negative evidentially strict. So those
+three are the negative rule working: the model applied the very lemma it was asked to prove and the kernel
+still rejected the proof. The `@` gap would matter for an *accepted* attempt of that shape, and none occurs.
+Like the `aesop (add norm simp X)` form, it is left unfixed: the labels are frozen.
 
 ## Why mechanism 6 is training-only
 
