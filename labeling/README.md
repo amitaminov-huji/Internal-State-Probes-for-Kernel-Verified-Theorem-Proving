@@ -101,22 +101,28 @@ deliberately: an attempt given the target that still failed is the best-evidence
 The filter asks *where* the target's name appears, not *whether* it appears. It flags a name after
 `exact`/`apply`/`refine`, immediately after `:=`, after `using`, before a rewrite arrow, or inside a
 `[...]` bracket. The obvious alternative, "drop any success whose proof contains the name", is worse in both
-directions, measured over the **3,520 accepted** training and validation keep-list attempts:
+directions. The population is the **positive labels** on the keep lists, that is, exactly what the deployed
+filter passed: 781 in training (364 on 8B and 417 on 32B, the counts above) plus 2,617 in validation,
+**3,398** attempts.
 
-| rule | accepted attempts dropped | |
-|---|---:|---|
-| deployed, position-based | **122** (3.5%) | |
-| naive: short name appears anywhere | 193 (5.5%) | 71 more, and **none is a citation** |
-| naive: full name appears anywhere | 93 (2.6%) | misses short-name citations, counts comment echoes |
+| rule | positives it would discard | citations it would miss |
+|---|---:|---:|
+| deployed: the name in a citation position | — (this set is its output) | — |
+| naive: **short** name anywhere | **71** of 3,398 (2.1%) | 0 |
+| naive: **full** name anywhere | 0 | **29** of 122 |
 
-The 71 extra attempts a mention rule would discard are not citations: `id`, the identity function, in
-`g ∘ f = id` (64 attempts, target `Function.LeftInverse.id`); `ext`, the *tactic* (3, target `Group.ext`);
-`map`, a field access `A.map f` (3, target `Matrix.IsDiag.map`); and `toReal_zero` inside
-`using Real.toReal_zero`, a different namespace's lemma (1, target `EReal.toReal_zero`). A mention rule
-throws away genuine positives to catch nothing.
+The two failure modes are opposite. The 71 positives a short-name rule would discard are not citations:
+`id`, the identity function, in `g ∘ f = id` (64 attempts, target `Function.LeftInverse.id`); `ext`, the
+*tactic* (3, target `Group.ext`); `map`, a field access `A.map f` (3, target `Matrix.IsDiag.map`); and
+`toReal_zero` inside `using Real.toReal_zero`, a different namespace's lemma (1, target
+`EReal.toReal_zero`). A full-name rule never over-catches, but of the **122** citations the filter did
+remove from the accepted training attempts (71 on 8B, 51 on 32B) only **93** carry the full name: the other
+**29** name the target by its short name alone, and a full-name rule would have admitted all 29 as
+positives. The short name is needed, and requiring a citation position is what makes matching it safe.
 
 The opposite risk, a real citation in a position the list does not cover, was checked by sweeping **all
-13,248** training and validation attempts for a target name the filter did not flag. 350 attempts mention it
+13,248** training and validation attempts (243 theorems x 8 attempts x 2 base models = 3,888 training;
+90 x 4 x 13 contest arms x 2 = 9,360 validation) for a target name the filter did not flag. 350 attempts mention it
 uncaught; 33 of those use the full name and every one is the model echoing the theorem statement in a `--`
 comment, all in *failing* attempts, where a citation changes no label; the 71 accepted ones are the
 short-name false alarms above. **No accepted proof cites the target through a form the filter missed.**
