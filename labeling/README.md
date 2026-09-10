@@ -50,8 +50,10 @@ olympiad benchmark, and the unqualified-name channel nearly vanishes on library 
 sit in their own namespaces. (Textual counts over proof bodies, so each figure is an upper bound on what would
 break, not a measured failure rate.)
 
-**Neither option is leakage-free.** Prefix replay removes the target and everything declared *after* it, but
-not a more general form or a sibling declared *earlier*, which is the common case since generalizations are
+**Neither option is leakage-free.** Under prefix replay the target and everything declared *after* it are out
+of scope at the proof's position. Nothing is deleted: `check_proof` retains the rest of the file verbatim and
+compiles it, so what changes is what the proof can cite, not what the file contains. What stays reachable is
+a more general form or a sibling declared *earlier*, which is the common case since generalizations are
 proved before their specializations. Compiling `EReal.mul_comm`'s prefix to its own position, the target is
 `unknown constant` but the general `CommMagma` lemma `mul_comm` still resolves. Any mathlib-derived corpus
 carries some leakage under any checking environment.
