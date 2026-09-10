@@ -46,7 +46,13 @@ def _cites(body: str, name: str) -> bool:
     anon-constructor `⟨…⟩`) or `:=`/`using`/`▸`, OR the name inside ANY `[…]` lemma bracket
     (simp / simp_all / simpa / rw / rewrite / unfold / linarith / nlinarith / aesop / positivity /
     gcongr / norm_num …). Stops at `;`/newline so a later unrelated tactic on the same line does
-    not over-match. The `__us` self-reference never matches (word boundary can't fall before `__`)."""
+    not over-match. The `__us` self-reference never matches (word boundary can't fall before `__`).
+
+    KNOWN GAP, left as it ran because the labels are frozen: the `:=` and `using` patterns require the
+    name immediately after the keyword, so Lean's explicit-argument prefix defeats them and
+    `have h := @X …` is not flagged, while exact/apply/refine and the bracket form survive `@`. Three
+    real citations of that shape occur in the corpus, all in FAILING attempts, where this predicate is
+    never consulted. See ../README.md and the characterisation tests in ../tests/."""
     e = re.escape(name)
     return bool(
         re.search(rf"\b(?:exact|apply|refine)\b[^\n;]*?\b{e}\b", body)   # exact/apply/refine … X (incl. ⟨X…⟩)

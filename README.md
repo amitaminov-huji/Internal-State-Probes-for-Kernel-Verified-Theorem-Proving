@@ -116,7 +116,8 @@ theorem end to end.
 - **The training labels are leakage-reduced, not leakage-free.** The probes are trained on mathlib-derived
   theorems, so the environment that checks a proof already contains the target lemma. Our labeling is *target-blinded*: it removes the
   target's own citation and its `simp`/`aesop` entries, but Lean cannot hide a differently-named sibling from an
-  imported environment. About 7% of the positive class is contaminated (7 of the 103 positive theorems). This is why the headline evaluation is
+  imported environment, and some solved theorems are not what they are named, because the extraction span can
+  truncate a statement or pick up a neighbouring declaration. This is why the headline evaluation is
   out of domain, on olympiad theorems, where the clash cannot arise.
 - **One theorem is force-failed by our own header.** The header emits the target's *complete* name. The
   validation theorem `gcd_greatest` is declared at root level, so that name carries no prefix, and the
@@ -156,7 +157,7 @@ theorem end to end.
   echoing the theorem statement in a comment rather than citing it; 71 accepted attempts mention only a short
   name, and none of those refers to the target (`id` the identity function, the `ext` tactic, a `.map` field,
   and one `simpa [toReal] using Real.toReal_zero` where the target was `EReal.toReal_zero` — that identifier
-  does not exist, the `using` term is inert because `simp [toReal]` closes the goal alone, and the statement is
+  does not exist and does no work, because `simp [toReal]` closes the goal on its own and the statement is
   true by definition). **No accepted proof cites the target through an uncaught form.**
 - **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
   everywhere on MathOlympiadBench, including on attempts that go on to verify.

@@ -16,7 +16,7 @@ set_option maxHeartbeats 0
 
 open BigOperators Real Nat Topology Rat
 
-namespace Finset
+namespace Finset.Subset
 ```
 
 ## 2. What the checker saw (verify header, from `build_verify_header`)
@@ -30,13 +30,14 @@ set_option maxHeartbeats 0
 open BigOperators Real Nat Topology Rat
 
 attribute [-simp] Finset.Subset.refl
-namespace Finset
+namespace Finset.Subset
 ```
 
 Two additions, both verification-time only: `attribute [-simp] Finset.Subset.refl` erases the target's own
-simp entry, and it sits **before** `namespace Finset` so the name resolves unambiguously at root level. Had
+simp entry, and it sits **before** `namespace Finset.Subset` so the name resolves unambiguously at root level. Had
 this theorem been one of the two registered aesop rules, an `attribute [-aesop]` line would follow the simp
-one, still before the namespace.
+one, still before the namespace. The namespace is the theorem's own, `Finset.Subset`, so the head below is
+`Subset.refl__us` rather than `refl__us`: the rebuilt statement keeps the source's spelling of the head.
 
 ## 3. The attempt as stored
 

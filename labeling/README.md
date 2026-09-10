@@ -27,7 +27,7 @@ theorems, **243** training and **90** validation.
 | 4 | **`attribute [-simp] <target>`**: remove the target's own simp entry, on every collider | verify-time | both |
 | 5 | **`attribute [-aesop] <target>`**: in addition, where the target is a registered aesop rule (2 of the 325 colliders) | verify-time | both |
 | 6 | **crutch purge**: drop an attempt that *fails* with the guard but *passes* without it | attempt | **training only, by design** |
-| 7 | **citation filter**: drop any surviving success whose proof text names the target | attempt | both |
+| 7 | **citation filter**: drop any surviving success whose proof text names the target **in a citation position** | attempt | both |
 | + | **attribute-error guard**: exclude an attempt whose prepended attribute line itself errored | attempt | both |
 
 The rename precedes the elaboration filter because it is what makes the filter possible: without it a
@@ -38,6 +38,12 @@ renamed".
 Mechanisms 2, 4 and 5 are emitted only at **checking time**; the prompt the model saw never contains them.
 Mechanism 5 is conditional because the command errors unless the target already is an aesop rule, so it is
 gated on the per-theorem classification in `data/theorem_classification.json`.
+
+The division of labour between 4, 5 and 7 is the point: the erases handle the **bare** tactic, a `simp` or
+`aesop` that closes the goal through the target's own entry, and the citation filter handles the **explicit**
+form, `simp [X]`, `exact X`, `apply X` and the aesop `add` clauses. Neither erase removes the theorem, only its
+registrations, so the target stays available to any proof willing to name it, and closing that is what the
+filter is for.
 
 **A positive therefore means three things at once**: it compiled under the guard, it did not cite the target,
 and it did not lean on the target's own automation entry.
