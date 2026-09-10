@@ -91,6 +91,37 @@ class TestAttrErrMessages(unittest.TestCase):
         self.assertTrue(self.mod._err_on_attribute(r, "Ordinal.lift_lt"))
 
 
+class TestCitationFilterAtPrefixGap(unittest.TestCase):
+    """The `@` gap in the citation filter.
+
+    CHARACTERISATION tests: Lean's explicit-argument prefix defeats the `:=` and `using` patterns, because
+    those two require the name immediately after the keyword. Three real citations of the form
+    `have h := @X ...` occur in the corpus, all in failing attempts, where the filter is never consulted, so
+    no label changed. Not fixed, because the labels are frozen; these tests FAIL if it ever is.
+    """
+
+    def setUp(self):
+        self.cites = _load.citation_filter()._cites
+
+    def test_bare_assignment_is_caught(self):
+        self.assertTrue(self.cites("have h := Foo.bar 1 2", "Foo.bar"))
+
+    def test_assignment_with_an_at_prefix_is_MISSED(self):
+        self.assertFalse(self.cites("have h := @Foo.bar 1 2", "Foo.bar"))
+
+    def test_using_with_an_at_prefix_is_MISSED(self):
+        self.assertFalse(self.cites("simpa using @Foo.bar", "Foo.bar"))
+
+    def test_exact_survives_the_at_prefix(self):
+        self.assertTrue(self.cites("exact @Foo.bar 1 2", "Foo.bar"))
+
+    def test_brackets_survive_the_at_prefix(self):
+        self.assertTrue(self.cites("rw [@Foo.bar]", "Foo.bar"))
+
+    def test_a_name_only_in_a_comment_is_not_a_citation_position(self):
+        self.assertFalse(self.cites("-- theorem Foo.bar : True\n  trivial", "Foo.bar"))
+
+
 class TestLabelSetDefinitions(unittest.TestCase):
     """The partition the README states, checked against the shipped counts.
 

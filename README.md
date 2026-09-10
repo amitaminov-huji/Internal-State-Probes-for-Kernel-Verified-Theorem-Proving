@@ -140,9 +140,12 @@ theorem end to end.
   word boundary would change what was measured.
 - **The citation filter matches positions, not mentions.** It flags the target's name after
   `exact`/`apply`/`refine`, immediately after `:=`, after `using`, before a rewrite arrow, or inside a
-  `[...]` bracket. A name that appears somewhere else is not flagged, and the one form this misses in
-  practice is `aesop (add norm simp X)`, the aesop analogue of `simp [X]`, whose argument sits in
-  parentheses rather than brackets. We swept **all 13,248 training and validation attempts** for the target's
+  `[...]` bracket. A name that appears somewhere else is not flagged, and two forms escape it: `aesop (add
+  norm simp X)`, the aesop analogue of `simp [X]`, whose argument sits in parentheses rather than brackets and
+  which occurs zero times in our generations; and Lean's explicit-argument prefix `@`, which defeats the `:=`
+  and `using` patterns, so `have h := @X ...` is not flagged. Three real citations of that shape occur, all in
+  *failing* attempts, where the filter is never consulted, so no label changed. Neither gap is fixed: the
+  labels are frozen. We swept **all 13,248 training and validation attempts** for the target's
   name appearing anywhere the filter does not look: 33 attempts mention the full name and every one is the
   model echoing the theorem statement in a comment, all in *failing* attempts; 71 accepted attempts mention
   only a short name, and all of those are something else entirely (`id` the identity function, the `ext`

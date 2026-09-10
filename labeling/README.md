@@ -101,8 +101,8 @@ deliberately: an attempt given the target that still failed is the best-evidence
 The filter asks *where* the target's name appears, not *whether* it appears. It flags a name after
 `exact`/`apply`/`refine`, immediately after `:=`, after `using`, before a rewrite arrow, or inside a
 `[...]` bracket. The obvious alternative, "drop any success whose proof contains the name", is worse in both
-directions. The population is the **positive labels** on the keep lists, that is, exactly what the deployed
-filter passed: 781 in training (364 on 8B and 417 on 32B, the counts above) plus 2,617 in validation,
+directions. The population is the **positive labels** of the training and validation theorem proof attempts,
+that is, exactly what the deployed filter passed: 781 in training (364 on 8B and 417 on 32B, the counts above) plus 2,617 in validation,
 **3,398** attempts.
 
 | rule | positives it would discard | citations it would miss |
@@ -113,9 +113,16 @@ filter passed: 781 in training (364 on 8B and 417 on 32B, the counts above) plus
 
 The two failure modes are opposite. The 71 positives a short-name rule would discard are not citations:
 `id`, the identity function, in `g ∘ f = id` (64 attempts, target `Function.LeftInverse.id`); `ext`, the
-*tactic* (3, target `Group.ext`); `map`, a field access `A.map f` (3, target `Matrix.IsDiag.map`); and
-`toReal_zero` inside `using Real.toReal_zero`, a different namespace's lemma (1, target
-`EReal.toReal_zero`). A full-name rule never over-catches, but of the **122** citations the filter did
+*tactic* (3, target `Group.ext`); `map`, a field access `A.map f` (3, target `Matrix.IsDiag.map`); and one
+`simpa [toReal] using Real.toReal_zero` (target `EReal.toReal_zero`). That last one is not a lemma from
+another namespace, which is what we first assumed: `Real.toReal_zero` **does not exist**, and the attempt
+compiles because `simp [toReal]` closes the goal on its own, with Lean's linter suggesting `simp` instead of
+`simpa`. The statement is true by definition, so no lemma is involved at all.
+
+A name rule would also fire on the model quoting the theorem it was asked to prove. Blanking Lean comments and
+re-checking, the target's full name appears in 373 attempts and in **29 of them only inside a comment**. All 29
+are negatives, where the citation filter is never consulted, so nothing would have changed here; nothing
+prevents the same echo in a positive, and there it would discard a genuine success. A full-name rule never over-catches, but of the **122** citations the filter did
 remove from the accepted training attempts (71 on 8B, 51 on 32B) only **93** carry the full name: the other
 **29** name the target by its short name alone, and a full-name rule would have admitted all 29 as
 positives. The short name is needed, and requiring a citation position is what makes matching it safe.

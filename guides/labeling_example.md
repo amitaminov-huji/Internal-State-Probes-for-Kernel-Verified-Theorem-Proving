@@ -1,6 +1,6 @@
 # Labelling one theorem, end to end
 
-`Finset.Subset.refl` from `Mathlib/Data/Finset/Basic.lean`, a `COLLIDER_NONAESOP` in the validation keep-list.
+`Finset.Subset.refl` from `Mathlib/Data/Finset/Basic.lean`, a `COLLIDER_NONAESOP` among the retained validation theorems.
 Everything below is the deployed builder's output or a verbatim stored artifact.
 
 ## 1. What the model saw (prompt header)

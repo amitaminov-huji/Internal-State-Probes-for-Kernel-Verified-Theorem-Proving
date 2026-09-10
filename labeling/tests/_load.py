@@ -22,7 +22,11 @@ def lenient_headers():
     return _load("lenient_headers", CODE / "lenient_headers.py")
 
 
-def partition_verdicts():
+def _stub_pipeline():
+    """Stub the pipeline packages the shipped modules import but do not need under test.
+
+    Installed by every loader below, so no loader depends on another having run first.
+    """
     for name in ("verify_lean_robust", "probe_pipeline", "probe_pipeline.data",
                  "probe_pipeline.inference", "probe_pipeline.labeling"):
         sys.modules.setdefault(name, types.ModuleType(name))
@@ -32,8 +36,20 @@ def partition_verdicts():
                         ("probe_pipeline.data.filtered_dataset", ("dead_theorem_ids",)),
                         ("probe_pipeline.inference.legacy_assembly", ("assemble_legacy",)),
                         ("probe_pipeline.labeling.lenient_headers", ("Classification", "build_verify_header"))):
+        if name in sys.modules:
+            continue
         m = types.ModuleType(name)
         for a in attrs:
             setattr(m, a, lambda *a_, **k_: None)
         sys.modules[name] = m
+
+
+def citation_filter():
+    """The shipped citation filter, with its pipeline imports stubbed."""
+    _stub_pipeline()
+    return _load("citation_filter", CODE / "citation_filter.py")
+
+
+def partition_verdicts():
+    _stub_pipeline()
     return _load("relabel_lenient", CODE / "relabel_lenient.py").partition_verdicts
