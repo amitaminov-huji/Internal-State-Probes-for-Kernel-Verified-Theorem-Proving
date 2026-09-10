@@ -96,6 +96,31 @@ positive rule adds at most 94 attempts on 8B (+25.8%) and 53 on 32B (+12.7%), an
 by no longer counting a failure that names the target, removes 56 (-3.8%) and 62 (-4.2%). Those are kept
 deliberately: an attempt given the target that still failed is the best-evidenced negative there is.
 
+## Why the citation filter matches positions, not mentions
+
+The filter asks *where* the target's name appears, not *whether* it appears. It flags a name after
+`exact`/`apply`/`refine`, immediately after `:=`, after `using`, before a rewrite arrow, or inside a
+`[...]` bracket. The obvious alternative, "drop any success whose proof contains the name", is worse in both
+directions, measured over the **3,520 accepted** training and validation keep-list attempts:
+
+| rule | accepted attempts dropped | |
+|---|---:|---|
+| deployed, position-based | **122** (3.5%) | |
+| naive: short name appears anywhere | 193 (5.5%) | 71 more, and **none is a citation** |
+| naive: full name appears anywhere | 93 (2.6%) | misses short-name citations, counts comment echoes |
+
+The 71 extra attempts a mention rule would discard are not citations: `id`, the identity function, in
+`g ∘ f = id` (64 attempts, target `Function.LeftInverse.id`); `ext`, the *tactic* (3, target `Group.ext`);
+`map`, a field access `A.map f` (3, target `Matrix.IsDiag.map`); and `toReal_zero` inside
+`using Real.toReal_zero`, a different namespace's lemma (1, target `EReal.toReal_zero`). A mention rule
+throws away genuine positives to catch nothing.
+
+The opposite risk, a real citation in a position the list does not cover, was checked by sweeping **all
+13,248** training and validation attempts for a target name the filter did not flag. 350 attempts mention it
+uncaught; 33 of those use the full name and every one is the model echoing the theorem statement in a `--`
+comment, all in *failing* attempts, where a citation changes no label; the 71 accepted ones are the
+short-name false alarms above. **No accepted proof cites the target through a form the filter missed.**
+
 ## Why mechanism 6 is training-only
 
 The crutch purge only removes attempts that already **failed** under the guard. Training keeps labelled rows,
