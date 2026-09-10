@@ -23,8 +23,21 @@ The obvious alternative is to put the proof back where it came from: replay the 
 splice the candidate in, and recompile. That removes the target by construction, since it is not declared yet
 at that point, and it would make every mechanism below unnecessary. It is implemented, in the **original**
 `lean-dojo` package as `check_proof`, added in **4.20.0** (June 2025). Note the package: the separate
-`lean-dojo-v2` project is a different codebase whose whole-proof path does no checking at all, and the
-original repository also carries a tag named `v2.0.0`, which is not that project.
+`lean-dojo-v2` project is a different codebase, and the original repository also carries a tag named
+`v2.0.0`, which is not that project.
+
+`lean-dojo-v2` has **two paths, and they behave differently**. Its whole-proof path hands the model the
+extracted theorem statement, a source slice, and then does no checking at all. Its search path is the one
+that decides: it takes the theorem's printed elaborated type from `env_inspect(full_name)` and closes
+goals through Lean. That lookup is by name in a live environment, so the target's own module must be
+imported, and the target is then reachable by the proof. Run against a live server, a goal obtained that
+way is discharged by `exact <target>`; with the module absent the same call fails with
+`Symbol not found`. So the search path cannot obtain a goal without exposing the target, and the leakage
+question belongs to it rather than to the non-verifying whole-proof path.
+
+One packaging trap if you try to reproduce that: `pip install pantograph` installs an unrelated PyPI
+package, a library for drawing on HTML5 canvas. The dependency `lean-dojo-v2` actually imports is
+Stanford's PyPantograph, installed from git, and it is not listed in `lean-dojo-v2`'s requirements at all.
 
 We did not use it, and the reason is a trade-off rather than an oversight.
 
