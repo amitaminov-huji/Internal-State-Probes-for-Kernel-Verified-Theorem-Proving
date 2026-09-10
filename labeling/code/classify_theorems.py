@@ -1,4 +1,4 @@
-"""Phase-0 classification (plan §2.3): for each unique `full_name` in the CLEAN train+val keep-lists,
+"""Phase-0 classification (plan §2.3): for each unique `full_name` among the retained training and validation theorems,
 classify into NONCOLLIDER / COLLIDER_NONAESOP / COLLIDER_AESOP by compiling a single probe:
 
     import Mathlib
