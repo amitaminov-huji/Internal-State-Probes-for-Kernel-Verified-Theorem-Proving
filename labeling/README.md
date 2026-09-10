@@ -158,8 +158,11 @@ Like the `aesop (add norm simp X)` form, it is left unfixed: the labels are froz
 `/- ... -/` which nests, and the doc forms `/-- ... -/` and `/-! ... -/`, both of which open with `/-`. The
 filter strips none of them, so a proof that quotes the target inside a comment can be flagged. Blanking all
 four and re-checking: the target's full name appears in 373 attempts and in **29 of them only inside a
-comment**, and all 29 are negatives, where the filter is never consulted. **No positive was affected.** A
-comment-stripping pass would be free insurance and is the first thing to add in a future run.
+comment**, and all 29 are negatives, where the filter is never consulted. **No positive was affected.** The
+other direction is clean too: re-running the deployed predicate over all 328 removed citations, 122 in
+training and 206 across the 13 validation arms, with comments blanked, every one of them still cites the
+target, so **no drop was caused by a comment either**. Neither bound is guaranteed by the design, so a
+comment-stripping pass is still the first thing to add in a future run; it simply cost nothing here.
 
 **Short-name homonyms.** The filter matches the target's short name as well as its full name, and a *different*
 lemma sharing that short name can be in scope through the header's `open` or through the namespace itself. Call
