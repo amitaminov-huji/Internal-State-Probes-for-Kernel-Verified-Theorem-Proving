@@ -5,7 +5,9 @@ if it type-checks with a trusted axiom set. This is the measurement authority fo
 
 ## Protocol (four steps)
 
-1. Reject placeholder or malformed strings (empty, `None`, error markers).
+1. Reject placeholder or malformed strings (empty, `None`, error markers) **and any source that
+   contains `sorry`**, before compiling anything. The compiler's own `declaration uses 'sorry'`
+   warning is caught separately at step 4, so an incomplete proof is rejected either way.
 2. Append `#print axioms <thm>` to the Lean file.
 3. Compile with `lake env lean` under mathlib4, Lean **4.9.0-rc1**.
 4. Reject on a nonzero exit code, any `error:`, a `declaration uses 'sorry'` warning, or an axiom set not contained in
