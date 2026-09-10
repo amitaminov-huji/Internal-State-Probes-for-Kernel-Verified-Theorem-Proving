@@ -17,6 +17,44 @@ instance arguments, its `open` scopes and local notation, and the corpus gives u
 them, so a statement that needs that context cannot elaborate. Dropping those is what leaves about 20% of the
 theorems, **243** training and **90** validation.
 
+## Why not just check the proof in its own file?
+
+The obvious alternative is to put the proof back where it came from: replay the file's text up to the theorem,
+splice the candidate in, and recompile. That removes the target by construction, since it is not declared yet
+at that point, and it would make every mechanism below unnecessary. It is implemented, in the **original**
+`lean-dojo` package as `check_proof`, added in **4.20.0** (June 2025). Note the package: the separate
+`lean-dojo-v2` project is a different codebase whose whole-proof path does no checking at all, and the
+original repository also carries a tag named `v2.0.0`, which is not that project.
+
+We did not use it, and the reason is a trade-off rather than an oversight.
+
+| | what the model is prompted with | what the proof is elaborated in | leakage |
+|---|---|---|---|
+| **this repo** | the canonical header: `import Mathlib`, `import Aesop`, the `open`s | **the same header** | the target is in scope, so it is removed by name: the mechanisms below |
+| **prefix replay** | the same canonical header | **the file's own, narrower imports** | the target is unreachable, so none of those mechanisms are needed |
+
+**The canonical header is load-bearing.** Over every verifying attempt on the test set, **1,188 of 1,457
+(81.5%)** use a tactic, notation or unqualified name it supplies: `norm_num`/`positivity`/`polyrith`/`gcongr`
+(74.9%), `aesop` (12.6%), an unqualified name via the `open`s (9.4%), big-operator notation (7.5%). An
+environment that does not supply it therefore rejects correct proofs. (Textual counts over proof bodies, so
+that is an upper bound on what would break, not a measured failure rate.)
+
+**Neither option is leakage-free.** Prefix replay removes the target and everything declared *after* it, but
+not a more general form or a sibling declared *earlier*, which is the common case since generalizations are
+proved before their specializations. Compiling `EReal.mul_comm`'s prefix to its own position, the target is
+`unknown constant` but the general `CommMagma` lemma `mul_comm` still resolves. Any mathlib-derived corpus
+carries some leakage under any checking environment.
+
+**Combining the two is not available.** Injecting `import Mathlib` into a replayed prefix re-imports the
+finished module, so every declaration in the prefix collides with its imported copy, and the target is back in
+scope regardless of what the prefix is renamed to. Renaming the prefix to dodge the collision defeats the only
+reason to replay it, and would additionally require resolving every later reference in the prefix *and* in the
+retained suffix. So the choice is not "blinding versus a clean environment"; it is which mismatch to accept.
+
+One practical note for anyone trying the alternative on this corpus: `lean-dojo` 4.20.0 cannot trace it.
+Its extractor calls `Lean.HashMap.get?`, which does not exist in Lean 4.9.0-rc1, the toolchain this corpus
+pins, so tracing fails after the mathlib build completes.
+
 ## The seven mechanisms, in the order they apply
 
 | # | mechanism | level | applies in |
