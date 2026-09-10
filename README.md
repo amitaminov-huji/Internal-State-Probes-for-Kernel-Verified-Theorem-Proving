@@ -127,5 +127,11 @@ theorem end to end.
 - **The attribute-error guard has a blind spot.** It matches `not registered`, `unknown identifier` and
   `unknown constant`, but not `ambiguous identifier`, which is exactly why the case above was never surfaced.
   The guard fired once in the whole project.
+- **The citation filter matches positions, not mentions.** It flags the target's name after
+  `exact`/`apply`/`refine`, immediately after `:=`, after `using`, before a rewrite arrow, or inside a
+  `[...]` bracket. A name that appears somewhere else is not flagged, and the one form this misses in
+  practice is `aesop (add norm simp X)`, the aesop analogue of `simp [X]`, whose argument sits in
+  parentheses rather than brackets. It does not occur in our data: `aesop (add` appears zero times across
+  all training generations on both base models. Recorded so the gap is known rather than assumed absent.
 - **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
   everywhere on MathOlympiadBench, including on attempts that go on to verify.
