@@ -118,7 +118,9 @@ theorem end to end.
   target's own citation and its `simp`/`aesop` entries, but Lean cannot hide a differently-named sibling from an
   imported environment, and some solved theorems are not what they are named, because the extraction span can
   truncate a statement or pick up a neighbouring declaration. This is why the headline evaluation is
-  out of domain, on olympiad theorems, where the clash cannot arise.
+  out of domain, on olympiad theorems, where the clash cannot arise. Checking the proof in its own file
+  instead would remove the target by construction; [`labeling/`](labeling/) explains why we did not, and why
+  neither choice is leakage-free.
 - **One theorem is force-failed by our own header.** The header emits the target's *complete* name. The
   validation theorem `gcd_greatest` is declared at root level, so that name carries no prefix, and the
   header's `open Nat` then makes it collide with `Nat.gcd_greatest`; Lean errors on the attribute line before
