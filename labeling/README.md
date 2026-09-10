@@ -33,11 +33,22 @@ We did not use it, and the reason is a trade-off rather than an oversight.
 | **this repo** | the canonical header: `import Mathlib`, `import Aesop`, the `open`s | **the same header** | the target is in scope, so it is removed by name: the mechanisms below |
 | **prefix replay** | the same canonical header | **the file's own, narrower imports** | the target is unreachable, so none of those mechanisms are needed |
 
-**The canonical header is load-bearing.** Over every verifying attempt on the test set, **1,188 of 1,457
-(81.5%)** use a tactic, notation or unqualified name it supplies: `norm_num`/`positivity`/`polyrith`/`gcongr`
-(74.9%), `aesop` (12.6%), an unqualified name via the `open`s (9.4%), big-operator notation (7.5%). An
-environment that does not supply it therefore rejects correct proofs. (Textual counts over proof bodies, so
-that is an upper bound on what would break, not a measured failure rate.)
+**The canonical header is load-bearing.** Measured on the population this checking environment applies to,
+the 3,398 positive labels (781 training, 2,617 validation), **1,398 of them (41.1%)** use a tactic, notation
+or unqualified name it supplies. An environment that does not supply it therefore rejects correct proofs.
+
+| the header supplies | positives (3,398) | benchmark, for comparison (1,457) |
+|---|---:|---:|
+| `aesop`, which needs `import Aesop` | **762 (22.4%)** | 184 (12.6%) |
+| `norm_num` / `positivity` / `polyrith` / `gcongr` | 600 (17.7%) | 1,092 (74.9%) |
+| big-operator notation | 130 (3.8%) | 109 (7.5%) |
+| an unqualified name via the `open`s | 27 (0.8%) | 137 (9.4%) |
+| **any of these** | **1,398 (41.1%)** | 1,188 (81.5%) |
+
+The mix differs by domain: `aesop` leads on the mathlib theorems the labels come from, `norm_num` on the
+olympiad benchmark, and the unqualified-name channel nearly vanishes on library theorems because those files
+sit in their own namespaces. (Textual counts over proof bodies, so each figure is an upper bound on what would
+break, not a measured failure rate.)
 
 **Neither option is leakage-free.** Prefix replay removes the target and everything declared *after* it, but
 not a more general form or a sibling declared *earlier*, which is the common case since generalizations are
