@@ -159,5 +159,13 @@ theorem end to end.
   and one `simpa [toReal] using Real.toReal_zero` where the target was `EReal.toReal_zero` — that identifier
   does not exist and does no work, because `simp [toReal]` closes the goal on its own and the statement is
   true by definition). **No accepted proof cites the target through an uncaught form.**
+- **The citation filter has two measured limitations.** It reads the raw proof text, so a target named inside
+  a comment counts; across all 13,248 attempts the full name sits only inside a comment in 29, all of them
+  negatives, so no positive was affected. And it matches the target's *short* name, so a different lemma
+  sharing that name and reachable through `open` or the namespace, a **short-name homonym**, can trigger a
+  drop: 7 of the 122 drops are homonyms. Five of those seven cite the target's own *more general form* or an
+  *alias* of it, which are leakage channels we list anyway, so the drop is right for the wrong reason; two
+  cite a genuinely different lemma. Restoring all seven would move the positive-theorem counts from 88/92/103
+  to 89/94/105 and touches no benchmark number. See [`labeling/`](labeling/).
 - **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
   everywhere on MathOlympiadBench, including on attempts that go on to verify.

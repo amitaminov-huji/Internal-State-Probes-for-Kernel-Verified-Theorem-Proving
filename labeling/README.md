@@ -152,6 +152,40 @@ three are the negative rule working: the model applied the very lemma it was ask
 still rejected the proof. The `@` gap would matter for an *accepted* attempt of that shape, and none occurs.
 Like the `aesop (add norm simp X)` form, it is left unfixed: the labels are frozen.
 
+### Two limitations of the filter, both measured
+
+**It reads the raw proof text, so comments count.** Lean has four comment forms: `--` to end of line,
+`/- ... -/` which nests, and the doc forms `/-- ... -/` and `/-! ... -/`, both of which open with `/-`. The
+filter strips none of them, so a proof that quotes the target inside a comment can be flagged. Blanking all
+four and re-checking: the target's full name appears in 373 attempts and in **29 of them only inside a
+comment**, and all 29 are negatives, where the filter is never consulted. **No positive was affected.** A
+comment-stripping pass would be free insurance and is the first thing to add in a future run.
+
+**Short-name homonyms.** The filter matches the target's short name as well as its full name, and a *different*
+lemma sharing that short name can be in scope through the header's `open` or through the namespace itself. Call
+that a **short-name homonym**. Of the 122 drops, 29 matched on the short name alone; resolving the cited
+identifier in each attempt's own scope with Lean shows **22 really are the target and 7 are homonyms**.
+
+Whether a homonym drop is a mistake depends on what the homonym says, and mostly it is not:
+
+| target | the proof cited | verdict |
+|---|---|---|
+| `EReal.mul_comm` (x4) | `mul_comm`, the general `CommMagma` lemma | **the more general form**, which instantiates to the target |
+| `Complex.AbsTheory.abs_re_le_abs` | `Complex.abs_re_le_abs`, the same statement | **an alias** |
+| `Int.gcd_assoc` | `Nat.gcd_assoc`, the same identity on `ℕ` | a different statement |
+| `Real.Angle.sign_zero` | `Real.sign_zero`, about a different function | a different statement |
+
+Five of the seven are the filter catching the *general form* and *alias* channels, two of the three leakage
+routes listed above, which a name-based rule reaches only by accident. Two drop a proof that used a genuinely
+different lemma. So these are **potential** false drops rather than false drops. Restoring all seven would move
+the positive-theorem counts from 88 / 92 / 103 to 89 / 94 / 105 and the training positives from 781 to 788; it
+touches no benchmark number, since MathOlympiadBench pass@32 involves no labelling. The labels are frozen, so
+this is recorded rather than corrected.
+
+The `EReal.mul_comm` case shows why a regex cannot settle this: inside `namespace EReal` the bare `mul_comm`
+denotes the general lemma, because the target is `protected` and does not shadow the root name. Deciding it
+needs Lean's own name resolution, not a better pattern.
+
 ## Why mechanism 6 is training-only
 
 The crutch purge only removes attempts that already **failed** under the guard. Training keeps labelled rows,
