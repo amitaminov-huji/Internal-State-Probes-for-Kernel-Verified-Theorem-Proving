@@ -166,15 +166,27 @@ it used on our cluster are replaced by `<REPO>`, which you set to your own check
 carry a second, older numbering from the design document this was built against, in which the citation
 filter is "mechanism 3"; that numbering is unrelated to the table above.
 
-## Two caveats
+## Three caveats
 
-- **The attribute-error guard has a blind spot.** It matches `not registered`, `unknown identifier` and
-  `unknown constant`, but **not** `ambiguous identifier`. One validation theorem, `gcd_greatest`, is declared
-  at root level, so its complete name has no prefix; the header's `open Nat` then makes that name collide
-  with `Nat.gcd_greatest` and Lean errors on the attribute line before reading the proof. All 104 of its
-  attempts fail regardless of the model. It is in neither the training nor the test set and scored zero in
-  every contest arm, so it moved no result. Only a namespace-less target is exposed this way: the other 324
-  of the 325 colliders have a namespaced complete name.
+- **The attribute-error guard has two blind spots, and has never bound.**
+  *First, the message list.* It matches `not registered`, `unknown identifier` and `unknown constant`, but
+  **not** `ambiguous identifier`. One validation theorem, `gcd_greatest`, is declared at root level, so its
+  complete name has no prefix; the header's `open Nat` then makes that name collide with `Nat.gcd_greatest`
+  and Lean errors on the attribute line before reading the proof. All 104 of its attempts fail regardless of
+  the model. It is in neither the training nor the test set and scored zero in every contest arm, so it moved
+  no result.
+  *Second, the quoting.* The guard requires the target's name as a quoted identifier, and Lean quotes names as
+  `'X'`, so a sibling ending in a prime makes the target's own quoted form a substring of an unrelated error.
+  The guard fired exactly once in the project, on `Ordinal.lift_lt` in one 32B contest arm, and that firing was
+  a **false positive** of exactly this kind: `unknown constant 'Ordinal.lift_lt'.mpr'` came from the proof
+  body, which used the primed sibling `Ordinal.lift_lt'`, while the attribute line compiled cleanly. That
+  attempt was failing anyway, so the guard changed no label and no count anywhere in this project.
+  *Neither is fixed here*, because the labels are frozen and either fix would change what was measured.
+- **`gcd_greatest` is the only broken header, measured.** Over the 243 training theorems the stored compiles
+  show no error on any theorem's attribute line; in validation a broken header would fail every attempt of its
+  theorem, so we compiled the header of each of the 28 theorems that scored zero in every arm, and found only
+  this one. A namespace-less complete name is the reason it happens, not the evidence that it happens only
+  here.
 - **The labels are leakage-reduced, not leakage-free.** Erasing the target's own entries does not reach a
   differently-named sibling or a more general form, which Lean gives no way to remove from an imported
   environment; nor an alias a name-based filter misses; nor an easy goal closed by other library lemmas.

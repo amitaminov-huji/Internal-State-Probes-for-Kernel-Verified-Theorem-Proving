@@ -122,11 +122,22 @@ theorem end to end.
   validation theorem `gcd_greatest` is declared at root level, so that name carries no prefix, and the
   header's `open Nat` then makes it collide with `Nat.gcd_greatest`; Lean errors on the attribute line before
   reading the proof, so all 104 of its attempts fail regardless of the model. It is in neither the training
-  nor the test set and scored zero in every contest arm, so it moved no result. Only a namespace-less target
-  is exposed this way: the other 324 of the 325 colliders have a namespaced complete name.
-- **The attribute-error guard has a blind spot.** It matches `not registered`, `unknown identifier` and
-  `unknown constant`, but not `ambiguous identifier`, which is exactly why the case above was never surfaced.
-  The guard fired once in the whole project.
+  nor the test set and scored zero in every contest arm, so it moved no result. It is also the **only** broken
+  header in the project, which we measured rather than argued: over the 243 training theorems the stored
+  compiles show no error on any theorem's attribute line, and in validation a broken header would fail every
+  attempt of its theorem, so we compiled the header of each of the 28 theorems that scored zero in every arm
+  and found this one. A namespace-less complete name is the reason it happens, not the evidence that it
+  happens only here.
+- **The attribute-error guard has two blind spots, and has never bound.** It matches `not registered`,
+  `unknown identifier` and `unknown constant`, but not `ambiguous identifier`, which is exactly why the case
+  above was never surfaced. It also matches the target's name as a quoted identifier, and Lean quotes names as
+  `'X'`, so a sibling ending in a prime makes the target's own quoted form a substring of an unrelated error.
+  The guard fired exactly once in the project, on `Ordinal.lift_lt` in one 32B contest arm, and that firing
+  was a **false positive** of exactly that kind: the error came from the proof body, which used the primed
+  sibling `Ordinal.lift_lt'`, while the attribute line compiled cleanly. That attempt was failing anyway, so
+  the guard changed no label and no count anywhere in this project. Both weaknesses are left as they ran: the
+  labels are frozen, and adding `ambiguous identifier` to the message list or anchoring the quoted match at a
+  word boundary would change what was measured.
 - **The citation filter matches positions, not mentions.** It flags the target's name after
   `exact`/`apply`/`refine`, immediately after `:=`, after `using`, before a rewrite arrow, or inside a
   `[...]` bracket. A name that appears somewhere else is not flagged, and the one form this misses in

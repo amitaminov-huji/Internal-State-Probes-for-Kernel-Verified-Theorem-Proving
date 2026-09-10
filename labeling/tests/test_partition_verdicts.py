@@ -43,10 +43,14 @@ class TestPartitionVerdicts(unittest.TestCase):
 
 
 class TestAttrErrMessages(unittest.TestCase):
-    """The guard's message list, and the ambiguity blind spot it deliberately does not cover.
+    """The guard's message list and its two blind spots.
 
-    This is a CHARACTERISATION test: `ambiguous identifier` is absent on purpose, and that absence is the
-    documented reason `gcd_greatest` was never surfaced. See ../README.md.
+    These are CHARACTERISATION tests: they pin the behaviour that produced the released labels, including
+    where it is wrong. `ambiguous identifier` is absent from the message list, which is why `gcd_greatest`
+    was never surfaced; and the quoted-identifier match is defeated by a sibling ending in a prime, which is
+    why the guard's only firing in the project was a false positive. Neither is fixed, because the labels are
+    frozen and either fix would change what was measured. A test here failing means the predicate changed.
+    See ../README.md.
     """
 
     def setUp(self):
@@ -73,6 +77,18 @@ class TestAttrErrMessages(unittest.TestCase):
     def test_substring_superset_is_not_misread(self):
         r = {"errors": [{"data": "unknown identifier 'Nat.addfoo'"}]}
         self.assertFalse(self.mod._err_on_attribute(r, "Nat.add"))
+
+    def test_a_primed_sibling_IS_misread_the_known_defect(self):
+        """Lean quotes an identifier as 'X', so the prime in a sibling `A.b'` closes the quote early and the
+        target's own quoted form becomes a substring. The guard fires on a body error it should ignore."""
+        r = {"errors": [{"data": "unknown constant 'A.b'.c'"}]}
+        self.assertTrue(self.mod._err_on_attribute(r, "A.b"))
+
+    def test_the_one_real_firing_was_this_defect(self):
+        """The only attempt in the project the guard flagged: 32B, arm lstm_temp0.3, Ordinal.lift_lt, seed 2.
+        The message is a proof-body error naming the primed sibling; the attribute line compiled cleanly."""
+        r = {"errors": [{"data": "unknown constant 'Ordinal.lift_lt'.mpr'"}]}
+        self.assertTrue(self.mod._err_on_attribute(r, "Ordinal.lift_lt"))
 
 
 class TestLabelSetDefinitions(unittest.TestCase):
