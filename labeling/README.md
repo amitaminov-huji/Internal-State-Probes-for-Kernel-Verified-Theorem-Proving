@@ -59,7 +59,7 @@ proved before their specializations. Compiling `EReal.mul_comm`'s prefix to its 
 carries some leakage under any checking environment.
 
 **Combining the two is not available.** Injecting `import Mathlib` into a replayed prefix re-imports the
-finished module, so every declaration in the prefix collides with its imported copy, and the target is back in
+finished module, so the public declarations in the prefix collide with their imported copies, and the target is back in
 scope regardless of what the prefix is renamed to. Renaming the prefix to dodge the collision defeats the only
 reason to replay it, and would additionally require resolving every later reference in the prefix *and* in the
 retained suffix. So the choice is not "blinding versus a clean environment"; it is which mismatch to accept.
