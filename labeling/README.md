@@ -296,10 +296,13 @@ Training runs over 1,944 attempts per model, leaving **1,850** (8B) and **1,891*
 - `tests/`, a runnable demonstration that each mechanism does what this file says.
 - `../guides/labeling_example.md`, one theorem end to end.
 
-Two notes on reading the code. It is the code that ran, changed in exactly one way: the absolute paths
-it used on our cluster are replaced by `<REPO>`, which you set to your own checkout. And its docstrings
+Three notes on reading the code. It is the code that ran, changed in exactly one way: the absolute paths
+it used on our cluster are replaced by `<REPO>`, which you set to your own checkout. Its docstrings
 carry a second, older numbering from the design document this was built against, in which the citation
-filter is "mechanism 3"; that numbering is unrelated to the table above.
+filter is "mechanism 3"; that numbering is unrelated to the table above. And it keeps the
+`probe_pipeline` imports it ran with, which are not part of this repo, so these modules are meant to be
+read and ported rather than imported as they stand: `tests/_load.py` stubs exactly those imports, so the
+tests exercise the real deployed functions rather than a copy of them.
 
 ## Three caveats
 
