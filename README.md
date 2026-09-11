@@ -183,9 +183,9 @@ theorem end to end.
   theorem, so the prompt stops there and the statement to be proved never appears: `Imo1987P1`,
   `Usa2023P4`, `Usa2023P5`, `imo_sl_2008_C4`, `imo_sl_2022_A6`. On two more the theorem is written with a
   line break between `:=` and `by`, so no literal `:= by` is found and a second `:= by sorry` is appended to
-  one already there: `imo_sl_2010_A3`, `imo_sl_2020_A3`. We keep the released prompt byte for byte, so both
-  arms receive the identical prompt and no comparison is affected; five of the seven are never solved by any
-  arm, which is why they look unsolvable in `results/`. The prompts are not stored here, but the behaviour is
+  one already there: `imo_sl_2010_A3`, `imo_sl_2020_A3`. We keep the released prompt byte for byte, and the base and
+  the steered runs were both decoded from it, so no comparison is affected; six of the seven are never solved
+  by any run, which is why they look unsolvable in `results/`. The prompts are not stored here, but the behaviour is
   reproducible from the released builder plus `dataset/MOBench.jsonl`.
 - **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
   everywhere on MathOlympiadBench, including on attempts that go on to verify.
