@@ -90,7 +90,7 @@ before Lean reaches the statement. The rename and two further header lines blind
 time only, never in the prompt: **`attribute [-simp]`** on every collider, and **`attribute [-aesop]`** in
 addition on the two colliders that are registered aesop rules. Two act per
 attempt: a **crutch purge** (drop an attempt that fails with the guard but passes without it) and a
-**citation filter** (drop any success whose proof names the target). An **attribute-error guard** excludes an
+**citation filter** (drop any success whose proof names the target). Alongside those seven, an **attribute-error guard** excludes an
 attempt whose prepended attribute line itself errored.
 
 **A positive means three things at once**: it compiled under the guard, it did not cite the target, and it did

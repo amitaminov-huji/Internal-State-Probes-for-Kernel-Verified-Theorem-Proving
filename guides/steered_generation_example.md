@@ -64,7 +64,8 @@ At **line starts**: any token whose id is in
 earlier internal name; 229 ids, the vocabulary items decoding to
 a whitespace run of two or more spaces). These are the tokens that immediately precede a proof line's real
 content. Note that they also occur inside the model's chain-of-thought, and the deployed processor applies no
-region gate, so roughly a third of firings happen while the model is still reasoning in prose.
+region gate, so about a third of firings on 8B and a quarter on 32B happen while the model is still
+reasoning in prose.
 
 ```python
 import json
