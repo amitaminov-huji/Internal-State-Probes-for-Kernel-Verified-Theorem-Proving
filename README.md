@@ -177,5 +177,15 @@ theorem end to end.
   *alias* of it, which are leakage channels we list anyway, so the drop is right for the wrong reason; two
   cite a genuinely different lemma. Restoring all seven would move the positive-theorem counts from 88/92/103
   to 89/94/105 and touches no benchmark number. See [`labeling/`](labeling/).
+- **Seven of the 360 benchmark prompts are damaged by the released prompt builder.**
+  Goedel-Prover-V2 forms each prompt as `lean4_code.split(":= by")[0] + ":= by sorry"`, cutting at the
+  *first* `:= by`. On five theorems an auxiliary `instance`/`def` carries a literal `:= by` before the
+  theorem, so the prompt stops there and the statement to be proved never appears: `Imo1987P1`,
+  `Usa2023P4`, `Usa2023P5`, `imo_sl_2008_C4`, `imo_sl_2022_A6`. On two more the theorem is written with a
+  line break between `:=` and `by`, so no literal `:= by` is found and a second `:= by sorry` is appended to
+  one already there: `imo_sl_2010_A3`, `imo_sl_2020_A3`. We keep the released prompt byte for byte, so both
+  arms receive the identical prompt and no comparison is affected; five of the seven are never solved by any
+  arm, which is why they look unsolvable in `results/`. The prompts are not stored here, but the behaviour is
+  reproducible from the released builder plus `dataset/MOBench.jsonl`.
 - **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
   everywhere on MathOlympiadBench, including on attempts that go on to verify.
