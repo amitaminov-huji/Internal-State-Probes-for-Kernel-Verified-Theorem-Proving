@@ -47,6 +47,37 @@ class TestResultsArtifacts(unittest.TestCase):
         self.assertIn("560 to 461", txt)
         self.assertIn("897 to 744", txt)
 
+    def test_base_and_steered_join_only_under_the_canonical_id(self):
+        """The two arms spell 131 of the 360 theorem ids differently, and the README says so.
+
+        A base file says `2006_A1` where the matching steered file says `imo_sl_2006_A1`, because the
+        arms come from different runs. Per-arm counts do not care, which is why every other test here
+        passes either way, but a naive join by `theorem_id` drops those 131 on both sides and gives the
+        wrong per-theorem gains and losses. This pins both halves: that the raw ids really do disagree
+        (so the README's warning is not stale) and that the canonical id recovers the published lists.
+        """
+        def canon(tid):
+            return tid[len("imo_sl_"):] if tid.startswith("imo_sl_") else tid
+
+        def solved(m, arm, key):
+            out = {}
+            for r in verdicts(m, arm):
+                k = key(r["theorem_id"])
+                out[k] = out.get(k, 0) + bool(r.get("valid"))
+            return out
+
+        for m, n_gain, n_loss in (("8B", 2, 8), ("32B", 5, 6)):
+            raw_b, raw_s = solved(m, "base", lambda x: x), solved(m, "steer", lambda x: x)
+            self.assertNotEqual(set(raw_b), set(raw_s),
+                                f"{m}: raw ids now agree; the README's join warning needs updating")
+            b, s = solved(m, "base", canon), solved(m, "steer", canon)
+            self.assertEqual(set(b), set(s), f"{m}: canonical ids must match across arms")
+            self.assertEqual(len(b), 360, m)
+            gains = [k for k in b if b[k] == 0 and s[k] > 0]
+            losses = [k for k in b if b[k] > 0 and s[k] == 0]
+            self.assertEqual(len(gains), n_gain, f"{m} gains: {sorted(gains)}")
+            self.assertEqual(len(losses), n_loss, f"{m} losses: {sorted(losses)}")
+
     def test_no_attempt_is_valid_with_an_off_whitelist_axiom(self):
         """The verification contract, checked on the artifacts rather than asserted."""
         allowed = {"propext", "Classical.choice", "Quot.sound"}

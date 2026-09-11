@@ -74,6 +74,14 @@ gain on 32B.
   table above. Only the assembled Lean source is stored, not the model's raw chain-of-thought or token-level
   telemetry.
 
+  **Joining a base arm to a steered arm: strip the `imo_sl_` prefix first.** The two arms were produced by
+  different runs and kept the theorem-id spelling each run used, so 131 of the 360 theorems appear as
+  `2006_A1` in a `*_base_*` file and as `imo_sl_2006_A1` in the matching `*_steer_*` file. Per-arm counts are
+  unaffected, but a naive join by `theorem_id` silently drops those 131 on both sides and gives the wrong
+  per-theorem gains and losses. Under the canonical id, `theorem_id.removeprefix("imo_sl_")`, the two arms
+  share all 360 theorems and reproduce the gains and losses quoted above (2 and 8 on 8B, 5 and 6 on 32B);
+  `tests/test_results_artifacts.py` pins exactly that.
+
 ## Labelling contract
 
 Verification decides whether a *proof* is real. Labelling decides whether a *training example* is honest, and
