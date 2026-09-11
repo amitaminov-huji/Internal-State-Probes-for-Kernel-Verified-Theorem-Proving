@@ -73,11 +73,16 @@ carries some leakage under any checking environment.
 
 **Combining the two is not available.** Injecting `import Mathlib` into a replayed prefix re-imports the
 finished module, so the public declarations in the prefix collide with their imported copies, and the target is back in
-scope regardless of what the prefix is renamed to. Renaming the prefix to dodge the collision defeats the only
+scope regardless of what the prefix is renamed to. This was checked inside `check_proof` itself, by
+injecting the header into the file it rebuilds: 259 `already been declared` errors on a mathlib file,
+and none in the same file without the injection. Renaming the prefix to dodge the collision defeats the only
 reason to replay it, and would additionally require resolving every later reference in the prefix *and* in the
 retained suffix. So the choice is not "blinding versus a clean environment"; it is which mismatch to accept.
 
-One practical note for anyone trying the alternative on this corpus: `lean-dojo` 4.20.0 cannot trace it.
+Two practical notes for anyone trying the alternative. As shipped, `check_proof` cannot accept anything on
+Lean 4.19 or 4.20: it always invokes `lake env lean` with `--memory`, and those releases removed the
+option that flag maps to, so every compile fails and the answer is false whatever the proof was. Strip
+the flag to observe its acceptance behaviour. And on this corpus specifically, `lean-dojo` 4.20.0 cannot trace it.
 Its extractor calls `Lean.HashMap.get?`, which does not exist in Lean 4.9.0-rc1, the toolchain this corpus
 pins, so tracing fails after the mathlib build completes.
 
