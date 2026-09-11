@@ -73,9 +73,13 @@ carries some leakage under any checking environment.
 
 **Combining the two is not available.** Injecting `import Mathlib` into a replayed prefix re-imports the
 finished module, so the public declarations in the prefix collide with their imported copies, and the target is back in
-scope regardless of what the prefix is renamed to. This was checked inside `check_proof` itself, by
-injecting the header into the file it rebuilds: 259 `already been declared` errors on a mathlib file,
-and none in the same file without the injection. Renaming the prefix to dodge the collision defeats the only
+scope regardless of what the prefix is renamed to. This was checked in LeanDojo's own environment, which is
+the fairest test available because the control and the hybrid are then the same LeanDojo code with one
+parameter changed. `check_proof` cannot express it, since its API varies only the proof and never the
+imports; its sibling `Dojo` takes `additional_imports` over the same prefix-replay construction. On a
+mathlib theorem, `Dojo(thm)` enters the replayed prefix and returns the theorem's goal, while
+`Dojo(thm, additional_imports=["Mathlib"])` fails, and the file LeanDojo generates then carries 286
+`already been declared` errors, the first on the target itself. Renaming the prefix to dodge the collision defeats the only
 reason to replay it, and would additionally require resolving every later reference in the prefix *and* in the
 retained suffix. So the choice is not "blinding versus a clean environment"; it is which mismatch to accept.
 
