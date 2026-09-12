@@ -187,5 +187,7 @@ theorem end to end.
   the steered runs were both decoded from it, so no comparison is affected; six of the seven are never solved
   by any run, which is why they look unsolvable in `results/`. The prompts are not stored here, but the behaviour is
   reproducible from the released builder plus `dataset/MOBench.jsonl`.
-- **The probes are not calibrated out of domain.** They discriminate well, but `p_fail` sits near 1 almost
-  everywhere on MathOlympiadBench, including on attempts that go on to verify.
+- **The probes are not calibrated out of domain.** They discriminate well, but on MathOlympiadBench the
+  predicted probability of success peaks at 0.09-0.27 even on the attempts that go on to verify, so `p_fail`
+  is uniformly high and spans a narrow band, and an intervention scaled by it varies far less between attempts
+  than their outcomes do.
