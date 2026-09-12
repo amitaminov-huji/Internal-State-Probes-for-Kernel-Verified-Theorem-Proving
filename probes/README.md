@@ -42,11 +42,33 @@ MLP (reference)  LayerNorm(2H) -> Linear(2H, 256) -> ReLU -> Dropout -> Linear(2
                  Input is the concatenation of the previous and current line-start states.
 ```
 
+## How they were trained
+
+Adam at `1e-3` for **30 fixed epochs** from **seed 0**, about five minutes per head on one GPU. The base model
+is frozen throughout; only the head's parameters move.
+
+The unit of a batch differs because the unit of a training example does. For the MLP an example is one line
+start and a batch is **512** of them (115,285 readings on 8B, 177,552 on 32B). For the LSTM an example is a
+whole attempt read in order, and a batch is **64** attempts padded to a common length with a mask, so the loss
+counts only real line starts and never the padding (1,805 attempts on 8B, 1,891 on 32B).
+
+The loss is binary cross-entropy weighted by the ratio of verifying to failing examples among the training
+examples used, applied to the failing class; failures dominate, so the weight is below one and pulls them down,
+which is the same as pulling the rare verifying examples up. The per-feature mean and standard deviation are
+computed on the training line starts alone and stored in the checkpoint, so the deployed controller sees
+exactly the inputs the head was fitted on. There is no early stopping, no learning-rate schedule, no weight
+decay and no gradient clipping. After each epoch the head is scored on a held-out slice and **the best epoch's
+weights are kept**, not the last epoch's — which is what the next section is about.
+
 ## A note on the stored metadata
 
 Each checkpoint's `metadata` carries `val_auroc_rowlevel_optimistic`, an in-training row-level holdout value of
-about 0.98-0.99. **That number is optimistic by construction**, because per-line rows from a single theorem fall
-on both sides of the split. The honest numbers are also stored, and are the ones the paper reports:
+about 0.98-0.99. **That number is optimistic by construction.** The labelled collection carries no
+separate validation split, so training falls back to a **10% holdout drawn at random from the training data
+itself** — over rows for the MLP and over whole attempts for the LSTM, and grouped by theorem in neither case.
+Line starts of one proof therefore sit on both sides of it, and a head can score well there by recognising a
+proof it has already largely seen. It is also the largest of 30 such evaluations, one per epoch, on the very
+slice that chooses the epoch. The honest numbers are also stored, and are the ones the paper reports:
 `kfold_grouped_auroc` (theorem-grouped, in domain) and `mobench_boundary_auroc` (out of domain).
 
 | checkpoint | theorem-grouped K-fold | MathOlympiadBench (out of domain) |
