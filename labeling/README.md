@@ -199,9 +199,10 @@ compiles because `simp [toReal]` closes the goal on its own, with Lean's linter 
 `simpa`. The statement is true by definition, so no lemma is involved at all.
 
 A name rule would also fire on the model quoting the theorem it was asked to prove. Blanking Lean comments and
-re-checking, the target's full name appears in 373 attempts and in **29 of them only inside a comment**. All 29
-are negatives, where the citation filter is never consulted, so nothing would have changed here; nothing
-prevents the same echo in a positive, and there it would discard a genuine success. A full-name rule never over-catches, but of the **122** citations the filter did
+re-checking, the target's full name appears in 373 attempts and in **29 of them only inside a comment**, and the
+*short* name, which is what the filter actually matches, in **149**, five times as often. None of those 178 is
+on an attempt that compiled under the guard, where the citation filter is never consulted, so nothing would
+have changed here; nothing prevents the same echo in a positive, and there it would discard a genuine success. A full-name rule never over-catches, but of the **122** citations the filter did
 remove from the accepted training attempts (71 on 8B, 51 on 32B) only **93** carry the full name: the other
 **29** name the target by its short name alone, and a full-name rule would have admitted all 29 as
 positives. The short name is needed, and requiring a citation position is what makes matching it safe.
@@ -230,12 +231,17 @@ Like the `aesop (add norm simp X)` form, it is left unfixed: the labels are froz
 **It reads the raw proof text, so comments count.** Lean has four comment forms: `--` to end of line,
 `/- ... -/` which nests, and the doc forms `/-- ... -/` and `/-! ... -/`, both of which open with `/-`. The
 filter strips none of them, so a proof that quotes the target inside a comment can be flagged. Blanking all
-four and re-checking: the target's full name appears in 373 attempts and in **29 of them only inside a
-comment**, and all 29 are negatives, where the filter is never consulted. **No positive was affected.** The
-other direction is clean too: re-running the deployed predicate over all 328 removed citations, 122 in
-training and 206 across the 13 validation arms, with comments blanked, every one of them still cites the
-target, so **no drop was caused by a comment either**. Neither bound is guaranteed by the design, so a
-comment-stripping pass is still the first thing to add in a future run; it simply cost nothing here.
+four and re-checking: the full name sits only inside a comment in **29** attempts (12 training, 17 validation)
+and the short name in **149** (44 and 105), and **not one of those 178 is on an attempt that compiled under the
+guard**. The filter only ever runs on successes, so it was never asked about any of them; that is stronger than
+saying no positive was affected, and it holds in both splits.
+
+The other direction, the false-positive one, is measured on the same population: the filter fires on **591**
+attempts, and every one of the 591 still fires once all four comment forms are blanked, so **no drop anywhere
+is caused by a comment**. The firings on attempts that did compile under the guard number 122 in training and
+206 across the 13 validation arms, which are exactly the drop counts above, so the check covers the deployed
+filter's complete output. Neither bound is guaranteed by the design, so a comment-stripping pass is still the
+first thing to add in a future run; it simply cost nothing here.
 
 **Short-name homonyms.** The filter matches the target's short name as well as its full name, and a *different*
 lemma sharing that short name can be in scope through the header's `open` or through the namespace itself. Call

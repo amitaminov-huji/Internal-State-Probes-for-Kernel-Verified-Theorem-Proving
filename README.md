@@ -182,8 +182,11 @@ theorem end to end.
   does not exist and does no work, because `simp [toReal]` closes the goal on its own and the statement is
   true by definition). **No accepted proof cites the target through an uncaught form.**
 - **The citation filter has two measured limitations.** It reads the raw proof text, so a target named inside
-  a comment counts; across all 13,248 attempts the full name sits only inside a comment in 29, all of them
-  negatives, so no positive was affected. And it matches the target's *short* name, so a different lemma
+  a comment counts; across all 13,248 attempts the full name sits only inside a comment in 29 and the short
+  name in 149, and not one of those 178 is on an attempt that compiled under the guard, so the filter, which
+  only ever runs on successes, was never asked about any of them. The reverse direction is measured too: the
+  filter fires on 591 attempts here and every one still fires with comments blanked, so no drop is caused by
+  a comment. And it matches the target's *short* name, so a different lemma
   sharing that name and reachable through `open` or the namespace, a **short-name homonym**, can trigger a
   drop: 7 of the 122 drops are homonyms. Five of those seven cite the target's own *more general form* or an
   *alias* of it, which are leakage channels we list anyway, so the drop is right for the wrong reason; two
