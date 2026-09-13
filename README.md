@@ -111,6 +111,11 @@ attempt whose prepended attribute line itself errored.
 **A positive means three things at once**: it compiled under the guard, it did not cite the target, and it did
 not lean on the target's own automation entry.
 
+The prompt these attempts are decoded from is the released completion template in both cases, but what goes
+into it differs: a mathlib lemma carries no informal statement and its statement ends at its type, so a
+training or validation prompt has **four** parts where a benchmark prompt has five and ends `:= by sorry`.
+`guides/labeling_example.md` shows a stored one.
+
 The crutch purge is **training-only, by design**: it removes only attempts that already failed under the
 guard, and the validation contest counts solves, so it cannot change a solved or passing count there.
 `l2_residual_timeout` is **not** a filter: it is surfaced for reporting, and such an attempt stays an

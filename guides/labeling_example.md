@@ -3,10 +3,10 @@
 `Finset.Subset.refl` from `Mathlib/Data/Finset/Basic.lean`, a `COLLIDER_NONAESOP` among the retained validation theorems.
 Everything below is the deployed builder's output or a verbatim stored artifact.
 
-## 1. What the model saw (prompt header)
+## 1. What the model saw (the prompt)
 
 The namespace travels into the prompt; the blinding does not. The model is never shown the attribute line or
-the rename.
+the rename. Here is this theorem's prompt header:
 
 ```lean
 import Mathlib
@@ -18,6 +18,38 @@ open BigOperators Real Nat Topology Rat
 
 namespace Finset.Subset
 ```
+
+That header sits inside the released completion prompt template, which is what the model is actually
+decoded from. **Training and validation prompts have the same structure**, so one stored example shows it
+for both. This one is verbatim from a training attempt (`Function.const_comp`, seed 0,
+`hidden_states_w2/8B/shard_0/attempts.jsonl`, fields `prompt` and `prompt_token_ids`); validation prompts
+are not stored, which is why the example is a training one rather than this section's theorem.
+
+````
+<|im_start|>user
+Complete the following Lean 4 code:
+
+```lean4
+import Mathlib
+import Aesop
+
+set_option maxHeartbeats 0
+
+open BigOperators Real Nat Topology Rat
+
+namespace Function
+
+theorem const_comp {γ : Sort*} (f : α → β) (c : γ) : const β c ∘ f = const α c```
+
+Before producing the Lean 4 code to formally prove the given theorem, provide a detailed proof plan outlining the main proof steps and strategies.
+The plan should highlight key ideas, intermediate lemmas, and proof structures that will guide the construction of the final formal proof.<|im_end|>
+<|im_start|>assistant
+````
+
+**Four parts**: the instruction, the Lean header with the theorem's namespace, the formal statement, and the
+closing instruction to plan the proof first. A MathOlympiadBench prompt has **five**, because those theorems
+carry an informal statement of the problem as a comment, and its statement ends `:= by sorry` where a library
+statement ends at its type. The template is identical in both cases; only what is slotted into it differs.
 
 ## 2. What the checker saw (verify header, from `build_verify_header`)
 

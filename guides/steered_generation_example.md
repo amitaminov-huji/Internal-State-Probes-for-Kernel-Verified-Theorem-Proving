@@ -99,19 +99,37 @@ weights are never updated.
 
 ## 4. Generate on an example theorem, then verify
 
-```python
-statement = r"""import Mathlib
-import Aesop
-set_option maxHeartbeats 0
-open BigOperators Real Nat Topology Rat
+The model is decoded from the released completion prompt, not from a bare statement. The header and the
+statement go inside that template, and the assembled file that is verified afterwards is the header, the
+statement and the model's proof body.
 
-theorem sq_nonneg_example (x : Real) : 0 <= x ^ 2 := by
-"""
-# ... generate steered completions with the logits processor above ...
+```python
+HEADER = ("import Mathlib\nimport Aesop\n\n"
+          "set_option maxHeartbeats 0\n\n"
+          "open BigOperators Real Nat Topology Rat\n\n")
+statement = "theorem sq_nonneg_example (x : Real) : 0 <= x ^ 2 := by sorry"
+
+prompt = (
+    "Complete the following Lean 4 code:\n\n"
+    f"```lean4\n{HEADER}{statement}```\n\n"
+    "Before producing the Lean 4 code to formally prove the given theorem, provide a "
+    "detailed proof plan outlining the main proof steps and strategies.\n"
+    "The plan should highlight key ideas, intermediate lemmas, and proof structures "
+    "that will guide the construction of the final formal proof."
+)
+prompt = tokenizer.apply_chat_template([{"role": "user", "content": prompt}],
+                                       tokenize=False, add_generation_prompt=True)
+
+# ... generate steered completions from `prompt` with the logits processor above ...
 from verify_lean_robust import verify_one
-solved = any(verify_one("sq_nonneg_example", header + completion, timeout=1800)["valid"]
-             for completion in attempts)
+solved = any(verify_one("sq_nonneg_example", HEADER + statement_with_proof, timeout=1800)["valid"]
+             for statement_with_proof in assembled_attempts)
 ```
+
+Two notes on the shape. A benchmark statement ends `:= by sorry`, as above, and carries an informal statement
+of the problem as a comment before it, which is the five-part prompt. A mathlib-derived training or validation
+statement has neither: it ends at its type, giving a four-part prompt from the same template. See
+[`labeling_example.md`](labeling_example.md) for a stored one.
 
 A theorem counts as solved when at least one of its 32 steered attempts verifies. See
 [`robust_verification_example.md`](robust_verification_example.md) for the verification step in isolation.
