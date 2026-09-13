@@ -74,6 +74,12 @@ gain on 32B.
   table above. Only the assembled Lean source is stored, not the model's raw chain-of-thought or token-level
   telemetry.
 
+  Verification allows 1800s and then escalates to 5400s. An attempt that still has not finished is recorded with
+  `exit_code: -1` and counts as a failure, never as a refutation, so every score here is a lower bound. Per arm,
+  out of 11,520 attempts each: **762 (8B base), 169 (8B steered), 820 (32B base), 200 (32B steered)**. The
+  steered arms have fewer because steering shortens the output. Re-verification showed late flips falling to
+  roughly zero by 5400s, which is why the budget stops there.
+
   **Joining a base arm to a steered arm: strip the `imo_sl_` prefix first.** The two arms were produced by
   different runs and kept the theorem-id spelling each run used, so 131 of the 360 theorems appear as
   `2006_A1` in a `*_base_*` file and as `imo_sl_2006_A1` in the matching `*_steer_*` file. Per-arm counts are
