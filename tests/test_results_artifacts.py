@@ -87,6 +87,31 @@ class TestResultsArtifacts(unittest.TestCase):
                     self.assertTrue(set(r.get("axioms") or []) <= allowed,
                                     f"{m} {arm} {r.get('attempt')}: {r.get('axioms')}")
 
+    def test_a_verifying_attempt_compiled(self):
+        """`valid` implies the Lean process exited 0, which is stronger than it sounds.
+
+        The verdicts are written in two timeout tiers: a first pass, then an escalation for whatever
+        timed out. Until 2026-09-13 the escalation refreshed `valid` but left `exit_code` and `axioms`
+        at the abandoned first-tier values, so 43 (8B) and 127 (32B) base rows read `valid: true`
+        beside `exit_code: -1`, and carried an empty axiom list. That empty list is also why
+        test_no_attempt_is_valid_with_an_off_whitelist_axiom passed on them vacuously. This test is
+        the one that bites.
+        """
+        for m, arm, _, _ in ARMS:
+            for r in verdicts(m, arm):
+                if r.get("valid"):
+                    self.assertEqual(r.get("exit_code"), 0,
+                                     f"{m} {arm} {r.get('attempt')}: valid but exit_code="
+                                     f"{r.get('exit_code')!r}")
+
+    def test_a_negative_exit_code_means_an_unresolved_timeout(self):
+        """`exit_code: -1` is a timeout that never resolved, so such an attempt is never valid."""
+        for m, arm, _, _ in ARMS:
+            for r in verdicts(m, arm):
+                if r.get("exit_code") == -1:
+                    self.assertFalse(r.get("valid"),
+                                     f"{m} {arm} {r.get('attempt')}: timed out yet valid")
+
 
 if __name__ == "__main__":
     unittest.main()
