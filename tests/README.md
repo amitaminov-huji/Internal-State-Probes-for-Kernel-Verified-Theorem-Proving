@@ -10,6 +10,7 @@ cd labeling/tests && python -m unittest discover -s .   # the labelling mechanis
 | file | covers |
 |---|---|
 | `test_results_artifacts.py` | every arm is a complete 360x32 sweep; solved theorems and verifying attempts equal the README table (41/35/60/59, 560/461/897/744); `solved_proofs` rows match the verdicts; no `valid` attempt rests on an off-whitelist axiom; and base-to-steered joins only under the canonical id, `theorem_id.removeprefix("imo_sl_")`, which is what reproduces the published gains and losses (2/8 on 8B, 5/6 on 32B) |
+| `test_lean_comments.py` | `robust_verification/lean_comments.py`: all four Lean comment forms, nesting to any depth, unterminated comments, CRLF, string literals preserved (including an unbalanced quote, which must never swallow real tactics), primes in identifiers, and the `sorry`-outside-comments helper the verifier README recommends for step 1 |
 | `test_probes.py` | parameter counts match the paper; the MLP consumes 2H and the LSTM H, so there is **no step-index feature**; `use_step_idx` is `False` in every checkpoint; the line-start token set has 229 ids; the ROC-AUC table is quoted to two decimals and each cell matches its own checkpoint |
 
 The axiom test is the verification contract checked against the artifacts rather than asserted in prose.

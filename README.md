@@ -56,7 +56,8 @@ gain on 32B.
 
 ## Layout
 
-- [`robust_verification/`](robust_verification/) - the verifier (`verify_lean_robust.py`) and how to run it.
+- [`robust_verification/`](robust_verification/) - the verifier (`verify_lean_robust.py`) and how to run it,
+  plus `lean_comments.py` and a recommended change to the protocol's text-level `sorry` check.
 - [`labeling/`](labeling/) - how an attempt becomes a label: the two theorem filters, the verify-time
   blinding, the attempt-level filters, the deployed code, and tests that demonstrate each one.
 - [`probes/`](probes/) - the probe checkpoints, the line-start token set, and their configuration.
