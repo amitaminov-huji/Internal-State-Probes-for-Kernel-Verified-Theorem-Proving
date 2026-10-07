@@ -64,6 +64,9 @@ gain on 32B.
 - [`guides/`](guides/) - `robust_verification_example.md`, `labeling_example.md` and
   `steered_generation_example.md`, each on an example theorem.
 - [`tests/`](tests/) - checks that the shipped results and probes match what this README claims.
+- [`Aminov-MSc-2026.pdf`](Aminov-MSc-2026.pdf) - the MSc thesis this work is reported in. Identical to the
+  deposited version except that the administrative student-number field is removed from the two cover
+  pages; the text, figures, tables and numbers are unchanged.
 - [`results/`](results/) - three files per arm on MathOlympiadBench:
   - `*_attempts.jsonl.gz` - **every** sampled attempt (all 32 per theorem, passing and failing), each row with
     `theorem_id`, `attempt`, `valid`, `exit_code`, `axioms`, and `full_code` (the exact Lean source verified).
@@ -206,3 +209,10 @@ theorem end to end.
   predicted probability of success peaks at 0.09-0.27 even on the attempts that go on to verify, so `p_fail`
   is uniformly high and spans a narrow band, and an intervention scaled by it varies far less between attempts
   than their outcomes do.
+
+## Licence
+
+Apache License 2.0; see [`LICENSE`](LICENSE). [`NOTICE`](NOTICE) records the third-party material this
+repository derives from: the theorem statements and solved proofs come from mathlib4 (Apache-2.0) and the
+MathOlympiadBench formalizations, and every generation in `results/` was produced by the released
+Goedel-Prover-V2 checkpoints, whose own terms govern redistribution of those generations.

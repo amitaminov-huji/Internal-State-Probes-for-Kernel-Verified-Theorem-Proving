@@ -1,0 +1,28 @@
+Internal-State Probes for Kernel-Verified Theorem Proving
+Copyright 2026 Amit Aminov
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+these files except in compliance with the License. You may obtain a copy of the
+License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+This repository contains material derived from, or produced with, third-party
+projects. Their own terms govern that material and are not superseded by the
+licence above:
+
+  * mathlib4 (https://github.com/leanprover-community/mathlib4), licensed under
+    the Apache License 2.0. The theorem statements proved in results/ and the
+    proofs in the *_solved_proofs.jsonl files are derived from mathlib4 and from
+    the MathOlympiadBench formalizations distributed with Goedel-Prover-V2.
+
+  * Lean 4 (https://github.com/leanprover/lean4), used as the verification
+    kernel throughout.
+
+  * Goedel-Prover-V2 (https://github.com/Goedel-LM/Goedel-Prover-V2), the frozen
+    base prover. Every generation in results/ was produced by the released 8B
+    and 32B checkpoints, from the released prompt template. Consult that
+    project's own licence and model card before redistributing the generations.
+
+The probe checkpoints in probes/, the verifier and labelling code, the guides,
+and the thesis PDF are original work by the copyright holder above.
